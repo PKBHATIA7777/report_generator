@@ -1,35 +1,53 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Stock Report Generator</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --bg: #0f0f0f;
-    --surface: #1a1a1a;
-    --surface2: #222222;
-    --border: #2e2e2e;
-    --accent: #f0c040;
-    --accent2: #e07050;
+  /* ── THEMES ── */
+  [data-theme="dark"] {
+    --bg: #111111;
+    --surface: #1e1e1e;
+    --surface2: #2a2a2a;
+    --border: #333333;
+    --accent: #f5a623;
+    --accent2: #e05c3a;
     --text: #f0ede8;
-    --text-muted: #888;
-    --radius: 10px;
-    --font-head: 'Syne', sans-serif;
-    --font-mono: 'DM Mono', monospace;
+    --text-muted: #999;
+    --text-strong: #ffffff;
+    --shadow: rgba(0,0,0,.4);
+    --hover-bg: #303030;
+  }
+  [data-theme="light"] {
+    --bg: #f2f2f0;
+    --surface: #ffffff;
+    --surface2: #e8e8e6;
+    --border: #cccccc;
+    --accent: #c97d08;
+    --accent2: #b83520;
+    --text: #1a1a1a;
+    --text-muted: #666;
+    --text-strong: #000000;
+    --shadow: rgba(0,0,0,.12);
+    --hover-bg: #e0e0de;
   }
 
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root { --radius: 9px; --font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
 
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   html { scroll-behavior: smooth; }
 
   body {
     background: var(--bg);
     color: var(--text);
-    font-family: var(--font-mono);
+    font-family: var(--font);
+    font-size: 15px;
+    line-height: 1.5;
     min-height: 100vh;
     overscroll-behavior: none;
+    transition: background .2s, color .2s;
   }
 
   /* ── LANDING ── */
@@ -41,284 +59,268 @@
     min-height: 100vh;
     padding: 2rem;
     text-align: center;
-    gap: 2rem;
+    gap: 1.6rem;
+    position: relative;
   }
 
-  .brand {
-    display: flex;
-    flex-direction: column;
-    gap: .5rem;
-  }
-
-  .brand-tag {
-    font-family: var(--font-mono);
-    font-size: .7rem;
-    letter-spacing: .25em;
-    color: var(--accent);
-    text-transform: uppercase;
+  .landing-top {
+    position: absolute;
+    top: 1.2rem;
+    right: 1.4rem;
   }
 
   .brand h1 {
-    font-family: var(--font-head);
-    font-size: clamp(2.2rem, 8vw, 4.5rem);
-    font-weight: 800;
-    line-height: 1;
-    letter-spacing: -.02em;
-    color: var(--text);
+    font-size: clamp(2rem, 7vw, 3.2rem);
+    font-weight: 700;
+    color: var(--text-strong);
+    letter-spacing: -.015em;
+    margin-bottom: .4rem;
   }
-
   .brand h1 span { color: var(--accent); }
-
-  .brand p {
-    font-size: .85rem;
-    color: var(--text-muted);
-    max-width: 28ch;
-    margin: .5rem auto 0;
-    line-height: 1.6;
-  }
+  .brand p { font-size: 1rem; color: var(--text-muted); }
 
   .btn-primary {
     background: var(--accent);
-    color: #111;
+    color: #fff;
     border: none;
-    padding: 1rem 2.5rem;
-    font-family: var(--font-head);
+    padding: .9rem 2.4rem;
+    font-family: var(--font);
     font-size: 1rem;
-    font-weight: 700;
-    letter-spacing: .04em;
+    font-weight: 600;
     border-radius: var(--radius);
     cursor: pointer;
-    transition: transform .15s, box-shadow .15s, background .15s;
-    box-shadow: 0 4px 20px rgba(240,192,64,.25);
+    transition: filter .15s, transform .1s;
   }
-
-  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(240,192,64,.35); }
-  .btn-primary:active { transform: translateY(0); }
+  .btn-primary:hover { filter: brightness(1.12); }
+  .btn-primary:active { transform: scale(.97); }
   .btn-primary:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
 
   .last-session-hint {
-    font-size: .75rem;
-    color: var(--text-muted);
+    font-size: .9rem;
+    color: var(--accent);
     cursor: pointer;
     text-decoration: underline;
     text-underline-offset: 3px;
-    opacity: .7;
-    transition: opacity .15s;
-  }
-  .last-session-hint:hover { opacity: 1; }
-
-  /* ── APP SHELL ── */
-  #app {
-    display: none;
-    flex-direction: column;
-    min-height: 100vh;
   }
 
-  .app-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: .9rem 1.4rem;
-    border-bottom: 1px solid var(--border);
-    background: var(--bg);
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    gap: 1rem;
-  }
-
-  .app-header h2 {
-    font-family: var(--font-head);
-    font-size: 1.1rem;
-    font-weight: 700;
-    color: var(--accent);
+  /* ── SHARED BUTTONS ── */
+  .theme-btn {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: .45rem .8rem;
+    font-size: .85rem;
+    font-family: var(--font);
+    font-weight: 500;
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: background .15s, border-color .15s, color .15s;
     white-space: nowrap;
   }
-
-  .header-actions {
-    display: flex;
-    gap: .6rem;
-    align-items: center;
-  }
+  .theme-btn:hover { background: var(--hover-bg); border-color: var(--accent); color: var(--accent); }
+  .theme-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
   .btn-icon {
     background: var(--surface2);
     border: 1px solid var(--border);
     color: var(--text);
-    padding: .55rem .9rem;
-    font-family: var(--font-mono);
-    font-size: .75rem;
+    padding: .45rem .8rem;
+    font-family: var(--font);
+    font-size: .85rem;
+    font-weight: 500;
     border-radius: var(--radius);
     cursor: pointer;
-    transition: background .15s, border-color .15s, transform .1s;
+    transition: background .15s, border-color .15s, color .15s;
     white-space: nowrap;
   }
-  .btn-icon:hover { background: var(--surface); border-color: var(--accent); color: var(--accent); }
-  .btn-icon:active { transform: scale(.97); }
+  .btn-icon:hover { background: var(--hover-bg); border-color: var(--accent); color: var(--accent); }
+  .btn-icon:active { opacity: .8; }
   .btn-icon:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
-  .btn-icon.danger:hover { border-color: #e05050; color: #e05050; }
+  /* ── APP SHELL ── */
+  #app { display: none; flex-direction: column; min-height: 100vh; }
+
+  .app-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: .7rem 1.2rem;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    gap: .8rem;
+    transition: background .2s, border-color .2s;
+  }
+
+  .app-header h2 {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--accent);
+    white-space: nowrap;
+  }
+
+  .header-actions { display: flex; gap: .5rem; align-items: center; flex-wrap: wrap; }
 
   /* ── LAYOUT ── */
   .app-body {
     display: grid;
-    grid-template-columns: 1fr 320px;
+    grid-template-columns: 1fr 310px;
     flex: 1;
-    min-height: 0;
   }
 
-  @media (max-width: 860px) {
+  @media (max-width: 820px) {
     .app-body { grid-template-columns: 1fr; }
-    .report-panel { border-left: none; border-top: 1px solid var(--border); }
+    .report-panel { border-left: none; border-top: 2px solid var(--border); }
   }
 
   /* ── SELECTION PANEL ── */
-  .selection-panel {
-    padding: 1.2rem 1.2rem 6rem;
-    overflow-y: auto;
+  .selection-panel { padding: 1rem 1rem 7rem; overflow-y: auto; }
+
+  .section-label {
+    font-size: .78rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .07em;
+    color: var(--text-muted);
+    margin-bottom: .65rem;
+    padding-left: .2rem;
   }
 
   .colour-row {
     display: flex;
     align-items: center;
     gap: .7rem;
-    margin-bottom: .6rem;
-    padding: .65rem .8rem;
+    margin-bottom: .5rem;
+    padding: .6rem .75rem;
     border-radius: var(--radius);
-    border: 1px solid var(--border);
+    border: 1.5px solid var(--border);
     background: var(--surface);
-    transition: border-color .15s;
+    transition: border-color .15s, background .2s;
   }
-
-  .colour-row:hover { border-color: #444; }
+  .colour-row:hover { border-color: #888; }
   .colour-row:focus-within { border-color: var(--accent); }
 
   .colour-swatch {
-    width: 36px;
-    height: 36px;
+    width: 32px;
+    height: 32px;
     border-radius: 6px;
     flex-shrink: 0;
-    border: 1px solid rgba(255,255,255,.08);
+    border: 1px solid rgba(128,128,128,.25);
   }
 
   .colour-name {
-    font-family: var(--font-head);
-    font-size: .85rem;
+    font-size: .93rem;
     font-weight: 600;
-    min-width: 90px;
+    min-width: 102px;
     flex-shrink: 0;
-    color: var(--text);
+    color: var(--text-strong);
   }
 
-  .sizes {
-    display: flex;
-    gap: .45rem;
-    flex-wrap: wrap;
-    flex: 1;
-  }
+  .sizes { display: flex; gap: .4rem; flex-wrap: wrap; flex: 1; }
 
   .size-btn {
     position: relative;
     background: var(--surface2);
-    border: 1px solid var(--border);
+    border: 1.5px solid var(--border);
     color: var(--text-muted);
-    width: 46px;
-    height: 46px;
-    border-radius: 7px;
-    font-family: var(--font-mono);
-    font-size: .7rem;
-    font-weight: 500;
+    width: 50px;
+    height: 50px;
+    border-radius: 8px;
+    font-family: var(--font);
+    font-size: .85rem;
+    font-weight: 600;
     cursor: pointer;
-    transition: background .12s, border-color .12s, color .12s, transform .1s;
+    transition: background .1s, border-color .1s, color .1s, transform .08s;
     display: flex;
     align-items: center;
     justify-content: center;
     user-select: none;
     -webkit-tap-highlight-color: transparent;
   }
-
-  .size-btn:hover { background: #2a2a2a; border-color: #555; color: var(--text); }
-  .size-btn:active { transform: scale(.93); }
+  .size-btn:hover { background: var(--hover-bg); border-color: #888; color: var(--text); }
+  .size-btn:active { transform: scale(.9); }
   .size-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-
   .size-btn.active {
-    background: rgba(240,192,64,.15);
+    background: color-mix(in srgb, var(--accent) 15%, transparent);
     border-color: var(--accent);
     color: var(--accent);
+    font-weight: 700;
   }
 
   .badge {
     position: absolute;
-    top: -7px;
-    right: -7px;
+    top: -8px;
+    right: -8px;
     background: var(--accent2);
     color: #fff;
-    font-size: .6rem;
-    font-weight: 500;
-    min-width: 18px;
-    height: 18px;
-    border-radius: 9px;
+    font-size: .63rem;
+    font-weight: 700;
+    min-width: 20px;
+    height: 20px;
+    border-radius: 10px;
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 0 4px;
+    padding: 0 5px;
     pointer-events: none;
-    line-height: 1;
-    font-family: var(--font-mono);
+    font-family: var(--font);
     animation: pop .15s ease;
+    line-height: 1;
+    border: 1.5px solid var(--bg);
   }
 
   @keyframes pop {
-    0% { transform: scale(.5); opacity: 0; }
-    70% { transform: scale(1.2); }
+    0%   { transform: scale(.4); opacity: 0; }
+    65%  { transform: scale(1.3); }
     100% { transform: scale(1); opacity: 1; }
   }
 
   /* ── COMMIT BAR ── */
   .commit-bar {
     position: fixed;
-    bottom: 0;
-    left: 0;
+    bottom: 0; left: 0;
     width: 100%;
-    padding: .9rem 1.2rem;
-    background: linear-gradient(to top, var(--bg) 75%, transparent);
+    padding: .8rem 1rem;
+    background: var(--bg);
+    border-top: 1px solid var(--border);
     display: flex;
     align-items: center;
-    gap: .8rem;
+    gap: .75rem;
     z-index: 50;
+    transition: background .2s, border-color .2s;
   }
 
-  @media (min-width: 861px) {
-    .commit-bar { width: calc(100% - 320px); }
-  }
+  @media (min-width: 821px) { .commit-bar { width: calc(100% - 310px); } }
 
   .pending-summary {
     flex: 1;
-    font-size: .75rem;
+    font-size: .83rem;
     color: var(--text-muted);
-    font-family: var(--font-mono);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
-
-  .pending-summary strong { color: var(--accent); font-weight: 500; }
+  .pending-summary strong { color: var(--accent); font-weight: 600; }
 
   .btn-commit {
     background: var(--accent);
-    color: #111;
+    color: #fff;
     border: none;
-    padding: .75rem 1.6rem;
-    font-family: var(--font-head);
-    font-size: .9rem;
+    padding: .72rem 1.5rem;
+    font-family: var(--font);
+    font-size: .95rem;
     font-weight: 700;
     border-radius: var(--radius);
     cursor: pointer;
-    transition: transform .12s, box-shadow .12s;
+    transition: filter .12s, transform .08s;
     white-space: nowrap;
-    box-shadow: 0 3px 16px rgba(240,192,64,.3);
   }
-  .btn-commit:hover { transform: translateY(-1px); box-shadow: 0 6px 24px rgba(240,192,64,.4); }
+  .btn-commit:hover { filter: brightness(1.1); }
   .btn-commit:active { transform: scale(.97); }
   .btn-commit:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-  .btn-commit:disabled { opacity: .35; cursor: not-allowed; transform: none; box-shadow: none; }
+  .btn-commit:disabled { opacity: .35; cursor: not-allowed; filter: none; transform: none; }
 
   /* ── REPORT PANEL ── */
   .report-panel {
@@ -326,119 +328,162 @@
     display: flex;
     flex-direction: column;
     position: sticky;
-    top: 57px;
-    height: calc(100vh - 57px);
+    top: 53px;
+    height: calc(100vh - 53px);
     overflow: hidden;
+    background: var(--surface);
+    transition: background .2s, border-color .2s;
   }
 
   .report-header {
-    padding: .9rem 1.1rem .6rem;
+    padding: .7rem 1rem .6rem;
     border-bottom: 1px solid var(--border);
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: .5rem;
     flex-shrink: 0;
   }
 
+  .report-header-left { display: flex; align-items: center; gap: .6rem; }
+
   .report-header h3 {
-    font-family: var(--font-head);
-    font-size: .9rem;
+    font-size: .82rem;
     font-weight: 700;
     color: var(--text-muted);
     text-transform: uppercase;
-    letter-spacing: .08em;
+    letter-spacing: .07em;
   }
 
-  .report-header .total-badge {
+  .total-badge {
     background: var(--accent);
-    color: #111;
-    font-size: .7rem;
+    color: #fff;
+    font-size: .72rem;
     font-weight: 700;
     padding: .2rem .55rem;
     border-radius: 20px;
-    font-family: var(--font-mono);
   }
 
-  .report-body {
-    flex: 1;
-    overflow-y: auto;
-    padding: .9rem 1.1rem;
-    font-family: var(--font-mono);
-    font-size: .78rem;
-    line-height: 1.8;
-    white-space: pre;
-  }
-
-  .report-body:empty::after {
-    content: 'No items added yet.\AClick sizes → Add to Report.';
-    white-space: pre;
-    color: var(--text-muted);
-    font-size: .75rem;
-  }
-
-  .report-colour-block { margin-bottom: .4rem; }
-  .report-colour-name { color: var(--accent); font-weight: 500; }
-  .report-size-line { color: var(--text); padding-left: 1rem; }
-  .report-total { color: var(--accent2); font-weight: 500; border-top: 1px solid var(--border); padding-top: .5rem; margin-top: .4rem; }
-
-  .report-footer {
-    padding: .8rem 1.1rem;
-    border-top: 1px solid var(--border);
-    display: flex;
-    gap: .6rem;
-    flex-shrink: 0;
-  }
-
-  .btn-copy {
-    flex: 1;
+  /* ── COPY BUTTON — top of report panel, always visible ── */
+  .btn-copy-top {
     background: var(--surface2);
-    border: 1px solid var(--border);
+    border: 1.5px solid var(--border);
     color: var(--text);
-    padding: .65rem;
-    font-family: var(--font-head);
-    font-size: .8rem;
+    padding: .42rem .9rem;
+    font-family: var(--font);
+    font-size: .83rem;
     font-weight: 600;
     border-radius: var(--radius);
     cursor: pointer;
     transition: background .15s, border-color .15s, color .15s;
+    white-space: nowrap;
+    flex-shrink: 0;
   }
-  .btn-copy:hover { background: #2a2a2a; border-color: var(--accent); color: var(--accent); }
-  .btn-copy:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-  .btn-copy:disabled { opacity: .35; cursor: not-allowed; }
+  .btn-copy-top:hover { background: var(--hover-bg); border-color: var(--accent); color: var(--accent); }
+  .btn-copy-top:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .btn-copy-top:disabled { opacity: .35; cursor: not-allowed; }
+  .btn-copy-top.copied { border-color: #2eaa60; color: #2eaa60; background: color-mix(in srgb, #2eaa60 10%, transparent); }
 
-  .btn-copy.copied { border-color: #50c878; color: #50c878; }
+  .report-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: .9rem 1rem 1rem;
+    font-size: .92rem;
+    line-height: 1.95;
+  }
+
+  .report-body:empty::after {
+    content: 'Nothing added yet.\A\ASelect sizes then tap\A"Add to Report →"';
+    white-space: pre;
+    color: var(--text-muted);
+    font-size: .85rem;
+    display: block;
+    line-height: 1.7;
+  }
+
+  .report-colour-block { margin-bottom: .3rem; }
+  .report-colour-name { color: var(--accent); font-weight: 700; font-size: .97rem; }
+  .report-size-line { color: var(--text); padding-left: 1.1rem; font-size: .9rem; }
+  .report-total {
+    color: var(--accent2);
+    font-weight: 700;
+    font-size: .97rem;
+    border-top: 1.5px solid var(--border);
+    padding-top: .55rem;
+    margin-top: .45rem;
+  }
+
+  .report-footer {
+    padding: .6rem 1rem;
+    border-top: 1px solid var(--border);
+    display: flex;
+    gap: .5rem;
+    align-items: center;
+    flex-shrink: 0;
+  }
+  .report-footer-label { font-size: .75rem; color: var(--text-muted); flex: 1; }
+
+  /* ── KEYBOARD SHORTCUTS BAR ── */
+  .shortcuts-bar {
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    padding: .45rem 1.2rem;
+    display: flex;
+    gap: 1.2rem;
+    flex-wrap: wrap;
+    font-size: .73rem;
+    color: var(--text-muted);
+    align-items: center;
+    transition: background .2s, border-color .2s;
+  }
+  .shortcut-item { display: flex; align-items: center; gap: .3rem; }
+
+  kbd {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-bottom-width: 2px;
+    border-radius: 4px;
+    padding: .08rem .4rem;
+    font-family: var(--font);
+    font-size: .7rem;
+    color: var(--text);
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  @media (max-width: 600px) { .shortcuts-bar { display: none; } }
 
   /* ── TOAST ── */
   .toast {
     position: fixed;
-    bottom: 5rem;
+    bottom: 5.5rem;
     left: 50%;
-    transform: translateX(-50%) translateY(20px);
-    background: var(--surface2);
+    transform: translateX(-50%) translateY(14px);
+    background: var(--surface);
     border: 1px solid var(--border);
     color: var(--text);
-    padding: .65rem 1.4rem;
+    padding: .58rem 1.3rem;
     border-radius: 30px;
-    font-size: .78rem;
-    font-family: var(--font-mono);
+    font-size: .83rem;
+    font-weight: 500;
     opacity: 0;
     pointer-events: none;
-    transition: opacity .2s, transform .2s;
+    transition: opacity .18s, transform .18s;
     z-index: 999;
     white-space: nowrap;
+    box-shadow: 0 4px 20px var(--shadow);
   }
   .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
   /* ── CONFIRM DIALOG ── */
   .overlay {
     position: fixed; inset: 0;
-    background: rgba(0,0,0,.7);
+    background: rgba(0,0,0,.55);
     display: flex; align-items: center; justify-content: center;
     z-index: 200;
     padding: 1.5rem;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity .2s;
+    opacity: 0; pointer-events: none;
+    transition: opacity .18s;
   }
   .overlay.show { opacity: 1; pointer-events: all; }
 
@@ -446,91 +491,67 @@
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: 14px;
-    padding: 1.8rem 2rem;
-    max-width: 340px;
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    gap: 1.2rem;
+    padding: 1.7rem 1.9rem;
+    max-width: 340px; width: 100%;
+    display: flex; flex-direction: column; gap: 1.1rem;
     transform: scale(.95);
-    transition: transform .2s;
+    transition: transform .18s;
+    box-shadow: 0 8px 40px var(--shadow);
   }
   .overlay.show .dialog { transform: scale(1); }
 
-  .dialog h3 {
-    font-family: var(--font-head);
-    font-size: 1.1rem;
-    font-weight: 700;
-  }
-  .dialog p {
-    font-size: .82rem;
-    color: var(--text-muted);
-    line-height: 1.6;
-  }
-  .dialog-actions {
-    display: flex;
-    gap: .7rem;
-    justify-content: flex-end;
-  }
+  .dialog h3 { font-size: 1.1rem; font-weight: 700; color: var(--text-strong); }
+  .dialog p  { font-size: .9rem; color: var(--text-muted); line-height: 1.6; }
+  .dialog-actions { display: flex; gap: .7rem; justify-content: flex-end; }
 
   .btn-cancel {
-    background: transparent;
-    border: 1px solid var(--border);
-    color: var(--text-muted);
-    padding: .6rem 1.2rem;
-    font-family: var(--font-mono);
-    font-size: .8rem;
-    border-radius: var(--radius);
-    cursor: pointer;
-    transition: border-color .15s, color .15s;
+    background: var(--surface2); border: 1px solid var(--border);
+    color: var(--text-muted); padding: .55rem 1.1rem;
+    font-family: var(--font); font-size: .9rem; font-weight: 500;
+    border-radius: var(--radius); cursor: pointer;
+    transition: background .15s, color .15s;
   }
-  .btn-cancel:hover { border-color: #555; color: var(--text); }
+  .btn-cancel:hover { background: var(--hover-bg); color: var(--text); }
   .btn-cancel:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
   .btn-danger {
-    background: #c0392b;
-    border: none;
-    color: #fff;
-    padding: .6rem 1.2rem;
-    font-family: var(--font-head);
-    font-size: .8rem;
-    font-weight: 700;
-    border-radius: var(--radius);
-    cursor: pointer;
+    background: #c0392b; border: none; color: #fff;
+    padding: .55rem 1.1rem; font-family: var(--font);
+    font-size: .9rem; font-weight: 700;
+    border-radius: var(--radius); cursor: pointer;
     transition: background .15s;
   }
   .btn-danger:hover { background: #e74c3c; }
   .btn-danger:focus-visible { outline: 2px solid #e74c3c; outline-offset: 2px; }
 
-  /* ── RESPONSIVE tweaks ── */
-  @media (max-width: 540px) {
-    .colour-name { min-width: 75px; font-size: .78rem; }
-    .size-btn { width: 42px; height: 42px; font-size: .65rem; }
-    .colour-swatch { width: 28px; height: 28px; }
-    .colour-row { gap: .5rem; padding: .55rem .65rem; }
+  /* ── MOBILE ── */
+  @media (max-width: 480px) {
+    .colour-name { min-width: 82px; font-size: .85rem; }
+    .size-btn { width: 45px; height: 45px; font-size: .8rem; }
+    .colour-swatch { width: 26px; height: 26px; }
+    .colour-row { gap: .45rem; padding: .5rem .6rem; }
     .app-header h2 { font-size: .95rem; }
+    .btn-icon, .theme-btn { padding: .4rem .6rem; font-size: .8rem; }
   }
 
-  /* ── Keyboard focus visible ring on rows ── */
-  .colour-row:has(.size-btn:focus-visible) { border-color: var(--accent); }
-
-  /* Scrollbar */
   ::-webkit-scrollbar { width: 5px; }
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
-  ::-webkit-scrollbar-thumb:hover { background: #444; }
+  ::-webkit-scrollbar-thumb:hover { background: #888; }
 </style>
 </head>
 <body>
 
 <!-- ── LANDING ── -->
 <div id="landing">
-  <div class="brand">
-    <span class="brand-tag">Stock Report Generator</span>
-    <h1>Your <span>Inventory</span><br>Report Tool</h1>
-    <p>Fast, offline, no login. Built for real business use.</p>
+  <div class="landing-top">
+    <button class="theme-btn" onclick="toggleTheme()" id="themeBtnLanding">☀ Light</button>
   </div>
-  <button class="btn-primary" id="newReportBtn" onclick="startApp()">+ Generate New Report</button>
+  <div class="brand">
+    <h1>Stock <span>Report</span></h1>
+    <p>Fast, offline inventory tool. No login needed.</p>
+  </div>
+  <button class="btn-primary" onclick="startApp()">+ New Report</button>
   <span class="last-session-hint" id="lastSessionHint" style="display:none" onclick="loadLastSession()">↩ Resume last session</span>
 </div>
 
@@ -539,29 +560,42 @@
   <header class="app-header">
     <h2>📋 Stock Report</h2>
     <div class="header-actions">
-      <button class="btn-icon" onclick="confirmReset()" title="Reset all (Ctrl+R)">↺ Reset</button>
-      <button class="btn-icon" onclick="backToLanding()" title="Back to home">✕ Close</button>
+      <button class="theme-btn" onclick="toggleTheme()" id="themeBtnApp">☀ Light</button>
+      <button class="btn-icon" onclick="confirmReset()" title="Reset all">↺ Reset</button>
+      <button class="btn-icon" onclick="backToLanding()">✕ Close</button>
     </div>
   </header>
 
   <div class="app-body">
-    <!-- Selection -->
+    <!-- Selection panel -->
     <div class="selection-panel" id="selectionPanel">
-      <!-- Rows injected by JS -->
+      <div class="section-label">Select colour &amp; size — each tap = 1 piece</div>
     </div>
 
-    <!-- Report -->
+    <!-- Report panel -->
     <div class="report-panel">
       <div class="report-header">
-        <h3>Live Report</h3>
-        <span class="total-badge" id="totalBadge">0 pcs</span>
+        <div class="report-header-left">
+          <h3>Live Report</h3>
+          <span class="total-badge" id="totalBadge">0 pcs</span>
+        </div>
+        <button class="btn-copy-top" id="copyBtn" onclick="copyReport()" disabled>⎘ Copy Report</button>
       </div>
       <div class="report-body" id="reportBody"></div>
       <div class="report-footer">
-        <button class="btn-copy" id="copyBtn" onclick="copyReport()" disabled>Copy Report</button>
-        <button class="btn-icon" onclick="clearReport()" title="Clear report">🗑</button>
+        <span class="report-footer-label">Updates live · auto-saved</span>
+        <button class="btn-icon" onclick="clearReport()">🗑 Clear</button>
       </div>
     </div>
+  </div>
+
+  <!-- Shortcuts bar -->
+  <div class="shortcuts-bar" id="shortcutsBar">
+    <div class="shortcut-item"><kbd>↑ ↓ ← →</kbd> Navigate</div>
+    <div class="shortcut-item" id="scAdd"></div>
+    <div class="shortcut-item" id="scCopy"></div>
+    <div class="shortcut-item" id="scReset"></div>
+    <div class="shortcut-item"><kbd>Esc</kbd> Cancel dialog</div>
   </div>
 
   <!-- Commit bar -->
@@ -571,11 +605,11 @@
   </div>
 </div>
 
-<!-- ── CONFIRM DIALOG ── -->
+<!-- ── DIALOG ── -->
 <div class="overlay" id="overlay" role="dialog" aria-modal="true" aria-labelledby="dialogTitle">
   <div class="dialog">
     <h3 id="dialogTitle">Reset Everything?</h3>
-    <p id="dialogMsg">This will clear all pending selections and the current report. This cannot be undone.</p>
+    <p>This will clear all pending selections and the current report. This cannot be undone.</p>
     <div class="dialog-actions">
       <button class="btn-cancel" onclick="closeDialog()">Cancel</button>
       <button class="btn-danger" id="dialogConfirmBtn" onclick="doReset()">Yes, Reset</button>
@@ -583,44 +617,66 @@
   </div>
 </div>
 
-<!-- ── TOAST ── -->
 <div class="toast" id="toast"></div>
 
 <script>
   // ── DATA ──────────────────────────────────────────────────────────────────
   const COLOURS = [
-    { name: 'White',        hex: '#f5f5f0', textDark: true  },
-    { name: 'Wine',         hex: '#6b1a2e', textDark: false },
-    { name: 'Peach',        hex: '#f5c5a3', textDark: true  },
-    { name: 'Black',        hex: '#1a1a1a', textDark: false },
-    { name: 'Bottle Green', hex: '#1a3d2e', textDark: false },
-    { name: 'Lavendar',     hex: '#b8a9d0', textDark: true  },
-    { name: 'Pista',        hex: '#b8d4a8', textDark: true  },
-    { name: 'Mehroon',      hex: '#7a2030', textDark: false },
+    { name: 'White',        hex: '#f5f5f0' },
+    { name: 'Wine',         hex: '#6b1a2e' },
+    { name: 'Peach',        hex: '#f5c5a3' },
+    { name: 'Black',        hex: '#1a1a1a' },
+    { name: 'Bottle Green', hex: '#1a3d2e' },
+    { name: 'Lavendar',     hex: '#b8a9d0' },
+    { name: 'Pista',        hex: '#b8d4a8' },
+    { name: 'Mehroon',      hex: '#7a2030' },
   ];
   const SIZES = ['S', 'M', 'L', 'XL', 'XXL'];
 
-  // pending[colourIdx][sizeIdx] = count (not yet committed)
   let pending = {};
-  // report[colourIdx][sizeIdx] = count (committed)
   let report  = {};
 
   function initData() {
     COLOURS.forEach((_, ci) => {
       pending[ci] = {};
       report[ci]  = {};
-      SIZES.forEach((_, si) => {
-        pending[ci][si] = 0;
-        report[ci][si]  = 0;
-      });
+      SIZES.forEach((_, si) => { pending[ci][si] = 0; report[ci][si] = 0; });
     });
+  }
+
+  // ── THEME ─────────────────────────────────────────────────────────────────
+  let currentTheme = localStorage.getItem('sr_theme') || 'dark';
+
+  function applyTheme(t) {
+    currentTheme = t;
+    document.documentElement.setAttribute('data-theme', t);
+    const label = t === 'dark' ? '☀ Light' : '🌙 Dark';
+    document.getElementById('themeBtnLanding').textContent = label;
+    document.getElementById('themeBtnApp').textContent     = label;
+    localStorage.setItem('sr_theme', t);
+  }
+
+  function toggleTheme() { applyTheme(currentTheme === 'dark' ? 'light' : 'dark'); }
+
+  // ── DETECT MAC ────────────────────────────────────────────────────────────
+  const isMac = /Mac|iPhone|iPad|iPod/.test(navigator.platform || navigator.userAgent);
+  const MOD   = isMac ? '⌘' : 'Ctrl';
+
+  function renderShortcutsBar() {
+    document.getElementById('scAdd').innerHTML   = `<kbd>${MOD} ↵</kbd> Add to report`;
+    document.getElementById('scCopy').innerHTML  = `<kbd>${MOD} ⇧ C</kbd> Copy report`;
+    document.getElementById('scReset').innerHTML = isMac
+      ? `<kbd>⌘ ⌫</kbd> Reset`
+      : `<kbd>Ctrl Del</kbd> Reset`;
   }
 
   // ── STORAGE ───────────────────────────────────────────────────────────────
   function saveToCache() {
-    localStorage.setItem('sr_report',  JSON.stringify(report));
-    localStorage.setItem('sr_pending', JSON.stringify(pending));
-    localStorage.setItem('sr_ts',      Date.now());
+    try {
+      localStorage.setItem('sr_report',  JSON.stringify(report));
+      localStorage.setItem('sr_pending', JSON.stringify(pending));
+      localStorage.setItem('sr_ts',      Date.now());
+    } catch(e) {}
   }
 
   function loadCache() {
@@ -629,16 +685,15 @@
       const p = localStorage.getItem('sr_pending');
       if (r) report  = JSON.parse(r);
       if (p) pending = JSON.parse(p);
-      return true;
-    } catch { return false; }
+    } catch(e) {}
   }
 
-  function hasLastSession() {
-    return !!localStorage.getItem('sr_ts');
-  }
+  function hasLastSession() { return !!localStorage.getItem('sr_ts'); }
 
   // ── LANDING ───────────────────────────────────────────────────────────────
   window.addEventListener('DOMContentLoaded', () => {
+    applyTheme(currentTheme);
+    renderShortcutsBar();
     if (hasLastSession()) {
       document.getElementById('lastSessionHint').style.display = 'inline';
     }
@@ -668,15 +723,13 @@
   function backToLanding() {
     document.getElementById('app').style.display = 'none';
     document.getElementById('landing').style.display = 'flex';
-    if (hasLastSession()) {
-      document.getElementById('lastSessionHint').style.display = 'inline';
-    }
+    if (hasLastSession()) document.getElementById('lastSessionHint').style.display = 'inline';
   }
 
   // ── GRID BUILD ────────────────────────────────────────────────────────────
   function buildSelectionGrid() {
     const panel = document.getElementById('selectionPanel');
-    panel.innerHTML = '';
+    panel.querySelectorAll('.colour-row').forEach(r => r.remove());
 
     COLOURS.forEach((col, ci) => {
       const row = document.createElement('div');
@@ -717,10 +770,9 @@
     saveToCache();
     updateBadge(ci, si);
     updateCommitBar();
-    // Pulse the row
     const row = btn.closest('.colour-row');
     row.style.borderColor = 'var(--accent)';
-    setTimeout(() => row.style.borderColor = '', 600);
+    setTimeout(() => row.style.borderColor = '', 500);
   }
 
   function updateBadge(ci, si) {
@@ -736,9 +788,8 @@
       }
       badge.textContent = count;
       btn.classList.add('active');
-      // re-trigger animation
       badge.style.animation = 'none';
-      badge.offsetHeight; // reflow
+      badge.offsetHeight;
       badge.style.animation = '';
     } else {
       if (badge) badge.remove();
@@ -747,11 +798,7 @@
   }
 
   function renderAllBadges() {
-    COLOURS.forEach((_, ci) => {
-      SIZES.forEach((_, si) => {
-        updateBadge(ci, si);
-      });
-    });
+    COLOURS.forEach((_, ci) => SIZES.forEach((_, si) => updateBadge(ci, si)));
   }
 
   function updateCommitBar() {
@@ -759,14 +806,10 @@
     const parts = [];
     COLOURS.forEach((col, ci) => {
       let colTotal = 0;
-      SIZES.forEach((sz, si) => { colTotal += pending[ci][si]; });
-      if (colTotal > 0) {
-        total += colTotal;
-        parts.push(`${col.name} ×${colTotal}`);
-      }
+      SIZES.forEach((_, si) => { colTotal += pending[ci][si]; });
+      if (colTotal > 0) { total += colTotal; parts.push(`${col.name} ×${colTotal}`); }
     });
-
-    const btn = document.getElementById('commitBtn');
+    const btn   = document.getElementById('commitBtn');
     const sumEl = document.getElementById('pendingSummary');
     if (total === 0) {
       btn.disabled = true;
@@ -796,10 +839,9 @@
     showToast('✓ Added to report');
   }
 
-  // ── REPORT RENDER ─────────────────────────────────────────────────────────
-  function renderReport() {
-    // Build sorted colour totals
-    const colData = COLOURS.map((col, ci) => {
+  // ── REPORT ────────────────────────────────────────────────────────────────
+  function getColData() {
+    return COLOURS.map((col, ci) => {
       let total = 0;
       const sizes = [];
       SIZES.forEach((sz, si) => {
@@ -809,7 +851,10 @@
       });
       return { col, ci, total, sizes };
     }).filter(d => d.total > 0).sort((a, b) => b.total - a.total);
+  }
 
+  function renderReport() {
+    const colData    = getColData();
     const reportBody = document.getElementById('reportBody');
     const copyBtn    = document.getElementById('copyBtn');
     const totalBadge = document.getElementById('totalBadge');
@@ -826,39 +871,22 @@
     totalBadge.textContent = `${grandTotal} pcs`;
     copyBtn.disabled = false;
 
-    reportBody.innerHTML = colData.map(d => {
-      const sizesHtml = d.sizes.map(s =>
-        `<div class="report-size-line">${s.n} ${s.sz}</div>`
-      ).join('');
-      return `<div class="report-colour-block">
+    reportBody.innerHTML = colData.map(d =>
+      `<div class="report-colour-block">
         <div class="report-colour-name">${d.col.name} (${d.total})</div>
-        ${sizesHtml}
-      </div>`;
-    }).join('') + `<div class="report-total">Total — ${grandTotal} pcs</div>`;
+        ${d.sizes.map(s => `<div class="report-size-line">${s.n} ${s.sz}</div>`).join('')}
+      </div>`
+    ).join('') + `<div class="report-total">Total — ${grandTotal} pcs</div>`;
   }
 
   function buildReportText() {
-    const colData = COLOURS.map((col, ci) => {
-      let total = 0;
-      const sizes = [];
-      SIZES.forEach((sz, si) => {
-        const n = report[ci][si] || 0;
-        total += n;
-        if (n > 0) sizes.push({ sz, n });
-      });
-      return { col, ci, total, sizes };
-    }).filter(d => d.total > 0).sort((a, b) => b.total - a.total);
-
+    const colData = getColData();
     if (colData.length === 0) return '';
     let grandTotal = 0;
     colData.forEach(d => grandTotal += d.total);
-
-    let text = colData.map(d => {
-      const lines = d.sizes.map(s => `${s.n} ${s.sz}`).join('\n');
-      return `${d.col.name} (${d.total})\n${lines}`;
-    }).join('\n');
-    text += `\nTotal - ${grandTotal} pcs`;
-    return text;
+    return colData.map(d =>
+      `${d.col.name} (${d.total})\n${d.sizes.map(s => `${s.n} ${s.sz}`).join('\n')}`
+    ).join('\n') + `\nTotal - ${grandTotal} pcs`;
   }
 
   async function copyReport() {
@@ -869,12 +897,10 @@
       const btn = document.getElementById('copyBtn');
       btn.textContent = '✓ Copied!';
       btn.classList.add('copied');
-      setTimeout(() => {
-        btn.textContent = 'Copy Report';
-        btn.classList.remove('copied');
-      }, 2000);
+      setTimeout(() => { btn.textContent = '⎘ Copy Report'; btn.classList.remove('copied'); }, 2200);
+      showToast('✓ Report copied to clipboard');
     } catch {
-      showToast('Copy failed — please copy manually');
+      showToast('Copy failed — use ' + (isMac ? '⌘ ⇧ C' : 'Ctrl+Shift+C'));
     }
   }
 
@@ -890,16 +916,10 @@
   // ── RESET ─────────────────────────────────────────────────────────────────
   function confirmReset() {
     document.getElementById('overlay').classList.add('show');
-    document.getElementById('dialogConfirmBtn').focus();
+    setTimeout(() => document.getElementById('dialogConfirmBtn').focus(), 50);
   }
-  function closeDialog() {
-    document.getElementById('overlay').classList.remove('show');
-  }
-  function doReset() {
-    closeDialog();
-    clearReport();
-    showToast('Everything reset');
-  }
+  function closeDialog() { document.getElementById('overlay').classList.remove('show'); }
+  function doReset() { closeDialog(); clearReport(); showToast('Everything reset'); }
 
   // ── TOAST ─────────────────────────────────────────────────────────────────
   let toastTimer;
@@ -908,16 +928,14 @@
     el.textContent = msg;
     el.classList.add('show');
     clearTimeout(toastTimer);
-    toastTimer = setTimeout(() => el.classList.remove('show'), 2000);
+    toastTimer = setTimeout(() => el.classList.remove('show'), 2300);
   }
 
-  // ── KEYBOARD NAVIGATION ───────────────────────────────────────────────────
-  // Arrow keys to move between size buttons; Enter/Space to click
+  // ── KEYBOARD NAV ─────────────────────────────────────────────────────────
   function handleKeyNav(e, ci, si) {
     const allBtns = Array.from(document.querySelectorAll('.size-btn'));
     const me = document.querySelector(`.size-btn[data-ci="${ci}"][data-si="${si}"]`);
     const idx = allBtns.indexOf(me);
-
     let target = null;
     if (e.key === 'ArrowRight') { e.preventDefault(); target = allBtns[idx + 1]; }
     if (e.key === 'ArrowLeft')  { e.preventDefault(); target = allBtns[idx - 1]; }
@@ -926,21 +944,44 @@
     if (target) target.focus();
   }
 
-  // Global keyboard shortcuts
+  // ── GLOBAL SHORTCUTS ─────────────────────────────────────────────────────
+  // On Mac: metaKey (⌘). On Windows/Linux: ctrlKey.
+  const modKey = e => isMac ? e.metaKey : e.ctrlKey;
+
   document.addEventListener('keydown', e => {
-    if (document.getElementById('app').style.display === 'none') return;
-    if (e.ctrlKey && e.key === 'Enter') { e.preventDefault(); commitSelections(); }
-    if (e.ctrlKey && e.key === 'r')     { e.preventDefault(); confirmReset(); }
-    if (e.ctrlKey && e.key === 'c' && document.activeElement.tagName !== 'INPUT') {
-      // only if report panel is focused area — skip, native copy still works
+    const appOpen = document.getElementById('app').style.display !== 'none';
+
+    // Theme toggle — works on both screens: Mod + Shift + T
+    if (modKey(e) && e.shiftKey && e.key.toUpperCase() === 'T') {
+      e.preventDefault(); toggleTheme(); return;
     }
+
+    if (!appOpen) return;
+
+    // Add to report: ⌘/Ctrl + Enter
+    if (modKey(e) && e.key === 'Enter') {
+      e.preventDefault(); commitSelections(); return;
+    }
+
+    // Copy report: ⌘/Ctrl + Shift + C
+    if (modKey(e) && e.shiftKey && e.key.toUpperCase() === 'C') {
+      e.preventDefault(); copyReport(); return;
+    }
+
+    // Reset: ⌘ + Backspace (Mac Delete key) OR Ctrl + Delete (Win)
+    if (modKey(e) && (e.key === 'Backspace' || e.key === 'Delete')) {
+      if (!['INPUT','TEXTAREA'].includes(document.activeElement.tagName)) {
+        e.preventDefault(); confirmReset(); return;
+      }
+    }
+
+    // Escape: close dialog
     if (e.key === 'Escape') {
-      const overlay = document.getElementById('overlay');
-      if (overlay.classList.contains('show')) closeDialog();
+      if (document.getElementById('overlay').classList.contains('show')) closeDialog();
     }
   });
 
-  // Close overlay on backdrop click
+  // Backdrop click
   document.getElementById('overlay').addEventListener('click', e => {
     if (e.target === document.getElementById('overlay')) closeDialog();
   });
