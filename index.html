@@ -14,6 +14,8 @@
     --border: #333333;
     --accent: #f5a623;
     --accent2: #e05c3a;
+    --remove-accent: #e74c3c;
+    --remove-bg: color-mix(in srgb, #e74c3c 14%, transparent);
     --text: #f0ede8;
     --text-muted: #999;
     --text-strong: #ffffff;
@@ -27,6 +29,8 @@
     --border: #cccccc;
     --accent: #c97d08;
     --accent2: #b83520;
+    --remove-accent: #c0392b;
+    --remove-bg: color-mix(in srgb, #c0392b 10%, transparent);
     --text: #1a1a1a;
     --text-muted: #666;
     --text-strong: #000000;
@@ -124,14 +128,15 @@
     background: var(--surface2);
     border: 1px solid var(--border);
     color: var(--text);
-    padding: .45rem .8rem;
+    padding: .45rem .65rem;
     font-family: var(--font);
-    font-size: .85rem;
+    font-size: .95rem;
     font-weight: 500;
     border-radius: var(--radius);
     cursor: pointer;
     transition: background .15s, border-color .15s, color .15s;
     white-space: nowrap;
+    line-height: 1;
   }
   .btn-icon:hover { background: var(--hover-bg); border-color: var(--accent); color: var(--accent); }
   .btn-icon:active { opacity: .8; }
@@ -163,6 +168,53 @@
 
   .header-actions { display: flex; gap: .5rem; align-items: center; flex-wrap: wrap; }
 
+  /* ── REMOVE MODE TOGGLE BUTTON ── */
+  .btn-remove-mode {
+    display: flex;
+    align-items: center;
+    gap: .42rem;
+    background: var(--surface2);
+    border: 1.5px solid var(--border);
+    color: var(--text-muted);
+    padding: .45rem .8rem;
+    font-family: var(--font);
+    font-size: .83rem;
+    font-weight: 600;
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: background .15s, border-color .15s, color .15s;
+    white-space: nowrap;
+    line-height: 1;
+  }
+  .btn-remove-mode:hover {
+    background: var(--hover-bg);
+    border-color: var(--remove-accent);
+    color: var(--remove-accent);
+  }
+  .btn-remove-mode.active {
+    background: var(--remove-bg);
+    border-color: var(--remove-accent);
+    color: var(--remove-accent);
+  }
+  .btn-remove-mode:focus-visible { outline: 2px solid var(--remove-accent); outline-offset: 2px; }
+
+  /* Remove mode pill indicator */
+  .remove-mode-banner {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    gap: .5rem;
+    background: var(--remove-bg);
+    border-bottom: 1.5px solid var(--remove-accent);
+    color: var(--remove-accent);
+    font-size: .8rem;
+    font-weight: 700;
+    padding: .42rem 1rem;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+  }
+  .remove-mode-banner.show { display: flex; }
+
   /* ── LAYOUT ── */
   .app-body {
     display: grid;
@@ -186,7 +238,9 @@
     color: var(--text-muted);
     margin-bottom: .65rem;
     padding-left: .2rem;
+    transition: color .2s;
   }
+  .section-label.remove-mode { color: var(--remove-accent); }
 
   .colour-row {
     display: flex;
@@ -201,6 +255,13 @@
   }
   .colour-row:hover { border-color: #888; }
   .colour-row:focus-within { border-color: var(--accent); }
+  .colour-row.remove-mode-active:focus-within { border-color: var(--remove-accent); }
+
+  /* Dim colour rows that have nothing in report (remove mode) */
+  .colour-row.no-report-stock {
+    opacity: .3;
+    pointer-events: none;
+  }
 
   .colour-swatch {
     width: 32px;
@@ -247,6 +308,25 @@
     border-color: var(--accent);
     color: var(--accent);
     font-weight: 700;
+  }
+
+  /* Remove mode size button states */
+  .size-btn.remove-pending {
+    background: var(--remove-bg);
+    border-color: var(--remove-accent);
+    color: var(--remove-accent);
+    font-weight: 700;
+  }
+  .size-btn.remove-pending:focus-visible { outline: 2px solid var(--remove-accent); }
+  .size-btn.remove-pending .badge {
+    background: var(--remove-accent);
+  }
+
+  /* Hidden in remove mode (not in report) */
+  .size-btn.hidden-in-remove {
+    opacity: 0;
+    pointer-events: none;
+    visibility: hidden;
   }
 
   .badge {
@@ -303,6 +383,7 @@
     white-space: nowrap;
   }
   .pending-summary strong { color: var(--accent); font-weight: 600; }
+  .pending-summary strong.remove { color: var(--remove-accent); }
 
   .btn-commit {
     background: var(--accent);
@@ -314,13 +395,19 @@
     font-weight: 700;
     border-radius: var(--radius);
     cursor: pointer;
-    transition: filter .12s, transform .08s;
+    transition: background .18s, filter .12s, transform .08s;
     white-space: nowrap;
   }
   .btn-commit:hover { filter: brightness(1.1); }
   .btn-commit:active { transform: scale(.97); }
   .btn-commit:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   .btn-commit:disabled { opacity: .35; cursor: not-allowed; filter: none; transform: none; }
+
+  /* Remove mode — red commit button */
+  .btn-commit.remove-mode {
+    background: var(--remove-accent);
+  }
+  .btn-commit.remove-mode:focus-visible { outline: 2px solid var(--remove-accent); }
 
   /* ── REPORT PANEL ── */
   .report-panel {
@@ -364,12 +451,18 @@
     border-radius: 20px;
   }
 
-  /* ── COPY BUTTON — top of report panel, always visible ── */
+  /* ── ACTION BUTTONS IN REPORT HEADER ── */
+  .report-header-actions {
+    display: flex;
+    align-items: center;
+    gap: .4rem;
+  }
+
   .btn-copy-top {
     background: var(--surface2);
     border: 1.5px solid var(--border);
     color: var(--text);
-    padding: .42rem .9rem;
+    padding: .42rem .75rem;
     font-family: var(--font);
     font-size: .83rem;
     font-weight: 600;
@@ -378,11 +471,39 @@
     transition: background .15s, border-color .15s, color .15s;
     white-space: nowrap;
     flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: .35rem;
   }
   .btn-copy-top:hover { background: var(--hover-bg); border-color: var(--accent); color: var(--accent); }
   .btn-copy-top:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   .btn-copy-top:disabled { opacity: .35; cursor: not-allowed; }
   .btn-copy-top.copied { border-color: #2eaa60; color: #2eaa60; background: color-mix(in srgb, #2eaa60 10%, transparent); }
+
+  /* WhatsApp button */
+  .btn-wa {
+    background: var(--surface2);
+    border: 1.5px solid var(--border);
+    color: var(--text);
+    padding: .42rem .75rem;
+    font-family: var(--font);
+    font-size: .83rem;
+    font-weight: 600;
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: background .15s, border-color .15s, color .15s;
+    white-space: nowrap;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: .35rem;
+    text-decoration: none;
+  }
+  .btn-wa:hover { background: color-mix(in srgb, #25D366 12%, transparent); border-color: #25D366; color: #25D366; }
+  .btn-wa:focus-visible { outline: 2px solid #25D366; outline-offset: 2px; }
+  .btn-wa.disabled { opacity: .35; pointer-events: none; cursor: not-allowed; }
+
+  .btn-wa svg, .btn-copy-top svg { flex-shrink: 0; }
 
   .report-body {
     flex: 1;
@@ -560,16 +681,35 @@
   <header class="app-header">
     <h2>📋 Stock Report</h2>
     <div class="header-actions">
-      <button class="theme-btn" onclick="toggleTheme()" id="themeBtnApp">☀ Light</button>
-      <button class="btn-icon" onclick="confirmReset()" title="Reset all">↺ Reset</button>
-      <button class="btn-icon" onclick="backToLanding()">✕ Close</button>
+      <!-- Remove mode toggle -->
+      <button class="btn-remove-mode" id="removeModeBtn" onclick="toggleRemoveMode()" title="Toggle Remove Mode">
+        <!-- Minus icon -->
+        <svg width="13" height="13" viewBox="0 0 13 13" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <circle cx="6.5" cy="6.5" r="5.75" stroke="currentColor" stroke-width="1.5"/>
+          <line x1="3.5" y1="6.5" x2="9.5" y2="6.5" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/>
+        </svg>
+        Remove
+      </button>
+      <!-- Icon-only buttons -->
+      <button class="btn-icon" onclick="toggleTheme()" id="themeBtnApp" title="Toggle theme" aria-label="Toggle theme">☀</button>
+      <button class="btn-icon" onclick="confirmReset()" title="Reset all" aria-label="Reset all">↺</button>
+      <button class="btn-icon" onclick="backToLanding()" title="Close" aria-label="Close">✕</button>
     </div>
   </header>
+
+  <!-- Remove mode banner -->
+  <div class="remove-mode-banner" id="removeModeBanner" role="status">
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <circle cx="7" cy="7" r="6.25" stroke="currentColor" stroke-width="1.5"/>
+      <line x1="4" y1="7" x2="10" y2="7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+    </svg>
+    Remove Mode — tap sizes to mark for removal
+  </div>
 
   <div class="app-body">
     <!-- Selection panel -->
     <div class="selection-panel" id="selectionPanel">
-      <div class="section-label">Select colour &amp; size — each tap = 1 piece</div>
+      <div class="section-label" id="sectionLabel">Select colour &amp; size — each tap = 1 piece</div>
     </div>
 
     <!-- Report panel -->
@@ -579,7 +719,25 @@
           <h3>Live Report</h3>
           <span class="total-badge" id="totalBadge">0 pcs</span>
         </div>
-        <button class="btn-copy-top" id="copyBtn" onclick="copyReport()" disabled>⎘ Copy Report</button>
+        <div class="report-header-actions">
+          <!-- Copy button (no "Report" word) -->
+          <button class="btn-copy-top" id="copyBtn" onclick="copyReport()" disabled title="Copy report to clipboard">
+            <!-- Clipboard icon -->
+            <svg width="13" height="13" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <rect x="5" y="2" width="8" height="11" rx="1.5" stroke="currentColor" stroke-width="1.4"/>
+              <path d="M3 4h-.5A1.5 1.5 0 0 0 1 5.5v8A1.5 1.5 0 0 0 2.5 15H10a1.5 1.5 0 0 0 1.5-1.5V13" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+            </svg>
+            ⎘ Copy
+          </button>
+          <!-- WhatsApp share button -->
+          <button class="btn-wa" id="waBtn" onclick="shareWhatsApp()" disabled title="Share on WhatsApp">
+            <!-- WhatsApp icon (official path) -->
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <path d="M20.52 3.48A11.93 11.93 0 0 0 12 0C5.37 0 0 5.37 0 12c0 2.11.55 4.17 1.59 5.99L0 24l6.18-1.62A11.93 11.93 0 0 0 12 24c6.63 0 12-5.37 12-12 0-3.21-1.25-6.23-3.48-8.52zM12 22c-1.85 0-3.67-.5-5.24-1.44l-.37-.22-3.88 1.02 1.04-3.78-.24-.38A9.94 9.94 0 0 1 2 12c0-5.52 4.48-10 10-10 2.67 0 5.18 1.04 7.07 2.93A9.95 9.95 0 0 1 22 12c0 5.52-4.48 10-10 10zm5.48-7.48c-.3-.15-1.77-.87-2.04-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.17-.17.2-.35.22-.65.07-.3-.15-1.27-.47-2.42-1.49-.89-.8-1.5-1.78-1.67-2.08-.17-.3-.02-.46.13-.61.13-.13.3-.35.45-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.02-.52-.07-.15-.67-1.6-.91-2.19-.24-.57-.49-.49-.67-.5h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48s1.07 2.88 1.22 3.08c.15.2 2.1 3.2 5.09 4.49.71.31 1.27.49 1.7.63.71.23 1.36.2 1.87.12.57-.09 1.77-.72 2.02-1.42.25-.7.25-1.29.17-1.42-.07-.13-.27-.2-.57-.35z"/>
+            </svg>
+            WhatsApp
+          </button>
+        </div>
       </div>
       <div class="report-body" id="reportBody"></div>
       <div class="report-footer">
@@ -633,14 +791,21 @@
   ];
   const SIZES = ['S', 'M', 'L', 'XL', 'XXL'];
 
-  let pending = {};
-  let report  = {};
+  let pending    = {};  // add pending
+  let removePend = {};  // remove pending
+  let report     = {};
+  let removeMode = false;
 
   function initData() {
     COLOURS.forEach((_, ci) => {
-      pending[ci] = {};
-      report[ci]  = {};
-      SIZES.forEach((_, si) => { pending[ci][si] = 0; report[ci][si] = 0; });
+      pending[ci]    = {};
+      removePend[ci] = {};
+      report[ci]     = {};
+      SIZES.forEach((_, si) => {
+        pending[ci][si]    = 0;
+        removePend[ci][si] = 0;
+        report[ci][si]     = 0;
+      });
     });
   }
 
@@ -650,9 +815,10 @@
   function applyTheme(t) {
     currentTheme = t;
     document.documentElement.setAttribute('data-theme', t);
-    const label = t === 'dark' ? '☀ Light' : '🌙 Dark';
-    document.getElementById('themeBtnLanding').textContent = label;
-    document.getElementById('themeBtnApp').textContent     = label;
+    const isDark = t === 'dark';
+    const label  = isDark ? '☀' : '🌙';
+    document.getElementById('themeBtnLanding').textContent = isDark ? '☀ Light' : '🌙 Dark';
+    document.getElementById('themeBtnApp').textContent = label;
     localStorage.setItem('sr_theme', t);
   }
 
@@ -663,8 +829,8 @@
   const MOD   = isMac ? '⌘' : 'Ctrl';
 
   function renderShortcutsBar() {
-    document.getElementById('scAdd').innerHTML   = `<kbd>${MOD} ↵</kbd> Add to report`;
-    document.getElementById('scCopy').innerHTML  = `<kbd>${MOD} ⇧ C</kbd> Copy report`;
+    document.getElementById('scAdd').innerHTML   = `<kbd>${MOD} ↵</kbd> Add/Remove`;
+    document.getElementById('scCopy').innerHTML  = `<kbd>${MOD} ⇧ C</kbd> Copy`;
     document.getElementById('scReset').innerHTML = isMac
       ? `<kbd>⌘ ⌫</kbd> Reset`
       : `<kbd>Ctrl Del</kbd> Reset`;
@@ -673,18 +839,24 @@
   // ── STORAGE ───────────────────────────────────────────────────────────────
   function saveToCache() {
     try {
-      localStorage.setItem('sr_report',  JSON.stringify(report));
-      localStorage.setItem('sr_pending', JSON.stringify(pending));
-      localStorage.setItem('sr_ts',      Date.now());
+      localStorage.setItem('sr_report',     JSON.stringify(report));
+      localStorage.setItem('sr_pending',    JSON.stringify(pending));
+      localStorage.setItem('sr_remPend',    JSON.stringify(removePend));
+      localStorage.setItem('sr_removeMode', JSON.stringify(removeMode));
+      localStorage.setItem('sr_ts',         Date.now());
     } catch(e) {}
   }
 
   function loadCache() {
     try {
-      const r = localStorage.getItem('sr_report');
-      const p = localStorage.getItem('sr_pending');
-      if (r) report  = JSON.parse(r);
-      if (p) pending = JSON.parse(p);
+      const r  = localStorage.getItem('sr_report');
+      const p  = localStorage.getItem('sr_pending');
+      const rp = localStorage.getItem('sr_remPend');
+      const rm = localStorage.getItem('sr_removeMode');
+      if (r)  report     = JSON.parse(r);
+      if (p)  pending    = JSON.parse(p);
+      if (rp) removePend = JSON.parse(rp);
+      if (rm) removeMode = JSON.parse(rm);
     } catch(e) {}
   }
 
@@ -701,6 +873,7 @@
 
   function startApp() {
     initData();
+    removeMode = false;
     saveToCache();
     openApp();
   }
@@ -709,8 +882,10 @@
     initData();
     loadCache();
     openApp();
+    applyRemoveModeUI();
     renderReport();
     renderAllBadges();
+    refreshRemoveModeGrid();
     updateCommitBar();
   }
 
@@ -718,12 +893,95 @@
     document.getElementById('landing').style.display = 'none';
     document.getElementById('app').style.display = 'flex';
     buildSelectionGrid();
+    applyRemoveModeUI();
   }
 
   function backToLanding() {
     document.getElementById('app').style.display = 'none';
     document.getElementById('landing').style.display = 'flex';
     if (hasLastSession()) document.getElementById('lastSessionHint').style.display = 'inline';
+  }
+
+  // ── REMOVE MODE ───────────────────────────────────────────────────────────
+  function toggleRemoveMode() {
+    // Clear any pending of the OTHER mode before switching
+    if (!removeMode) {
+      // Switching TO remove mode: clear add-pending
+      COLOURS.forEach((_, ci) => SIZES.forEach((_, si) => { pending[ci][si] = 0; }));
+    } else {
+      // Switching back to add mode: clear remove-pending
+      COLOURS.forEach((_, ci) => SIZES.forEach((_, si) => { removePend[ci][si] = 0; }));
+    }
+    removeMode = !removeMode;
+    applyRemoveModeUI();
+    renderAllBadges();
+    refreshRemoveModeGrid();
+    updateCommitBar();
+    saveToCache();
+  }
+
+  function applyRemoveModeUI() {
+    const btn    = document.getElementById('removeModeBtn');
+    const banner = document.getElementById('removeModeBanner');
+    const label  = document.getElementById('sectionLabel');
+    const commit = document.getElementById('commitBtn');
+
+    if (removeMode) {
+      btn.classList.add('active');
+      banner.classList.add('show');
+      label.textContent = 'Remove mode — tap sizes to mark for removal';
+      label.classList.add('remove-mode');
+      commit.classList.add('remove-mode');
+      commit.textContent = 'Remove from Report →';
+    } else {
+      btn.classList.remove('active');
+      banner.classList.remove('show');
+      label.textContent = 'Select colour & size — each tap = 1 piece';
+      label.classList.remove('remove-mode');
+      commit.classList.remove('remove-mode');
+      commit.textContent = 'Add to Report →';
+    }
+  }
+
+  /**
+   * In remove mode: hide size buttons that have 0 in the report,
+   * and dim colour rows that have nothing in the report at all.
+   */
+  function refreshRemoveModeGrid() {
+    COLOURS.forEach((_, ci) => {
+      const row = document.querySelector(`.colour-row[data-ci="${ci}"]`);
+      if (!row) return;
+
+      let colHasStock = false;
+      SIZES.forEach((_, si) => {
+        const btn = document.querySelector(`.size-btn[data-ci="${ci}"][data-si="${si}"]`);
+        if (!btn) return;
+        const inReport = (report[ci] && report[ci][si]) ? report[ci][si] : 0;
+        if (removeMode) {
+          if (inReport > 0) {
+            btn.classList.remove('hidden-in-remove');
+            colHasStock = true;
+          } else {
+            btn.classList.add('hidden-in-remove');
+          }
+        } else {
+          btn.classList.remove('hidden-in-remove');
+        }
+      });
+
+      if (removeMode) {
+        if (colHasStock) {
+          row.classList.remove('no-report-stock');
+          row.classList.add('remove-mode-active');
+        } else {
+          row.classList.add('no-report-stock');
+          row.classList.remove('remove-mode-active');
+        }
+      } else {
+        row.classList.remove('no-report-stock');
+        row.classList.remove('remove-mode-active');
+      }
+    });
   }
 
   // ── GRID BUILD ────────────────────────────────────────────────────────────
@@ -766,20 +1024,56 @@
 
   // ── INTERACTION ───────────────────────────────────────────────────────────
   function handleClick(ci, si, btn) {
+    if (removeMode) {
+      handleRemoveClick(ci, si, btn);
+    } else {
+      handleAddClick(ci, si, btn);
+    }
+  }
+
+  function handleAddClick(ci, si, btn) {
     pending[ci][si]++;
     saveToCache();
     updateBadge(ci, si);
     updateCommitBar();
+    flashRow(btn, 'var(--accent)');
+  }
+
+  function handleRemoveClick(ci, si, btn) {
+    // Can't schedule to remove more than what's in report
+    const inReport = (report[ci] && report[ci][si]) ? report[ci][si] : 0;
+    const already  = removePend[ci][si] || 0;
+    if (already >= inReport) {
+      showToast('⚠ Cannot remove more than in report');
+      return;
+    }
+    removePend[ci][si] = already + 1;
+    saveToCache();
+    updateBadge(ci, si);
+    updateCommitBar();
+    flashRow(btn, 'var(--remove-accent)');
+  }
+
+  function flashRow(btn, color) {
     const row = btn.closest('.colour-row');
-    row.style.borderColor = 'var(--accent)';
+    row.style.borderColor = color;
     setTimeout(() => row.style.borderColor = '', 500);
   }
 
   function updateBadge(ci, si) {
     const btn = document.querySelector(`.size-btn[data-ci="${ci}"][data-si="${si}"]`);
     if (!btn) return;
-    const count = pending[ci][si];
+
+    const addCount    = pending[ci][si]    || 0;
+    const removeCount = removePend[ci][si] || 0;
+
+    // Determine which count to show
+    const count     = removeMode ? removeCount : addCount;
+    const isRemove  = removeMode && removeCount > 0;
+    const isAdd     = !removeMode && addCount > 0;
+
     let badge = btn.querySelector('.badge');
+
     if (count > 0) {
       if (!badge) {
         badge = document.createElement('span');
@@ -787,13 +1081,14 @@
         btn.appendChild(badge);
       }
       badge.textContent = count;
-      btn.classList.add('active');
+      btn.classList.add(isRemove ? 'remove-pending' : 'active');
+      btn.classList.remove(isRemove ? 'active' : 'remove-pending');
       badge.style.animation = 'none';
       badge.offsetHeight;
       badge.style.animation = '';
     } else {
       if (badge) badge.remove();
-      btn.classList.remove('active');
+      btn.classList.remove('active', 'remove-pending');
     }
   }
 
@@ -802,25 +1097,51 @@
   }
 
   function updateCommitBar() {
-    let total = 0;
-    const parts = [];
-    COLOURS.forEach((col, ci) => {
-      let colTotal = 0;
-      SIZES.forEach((_, si) => { colTotal += pending[ci][si]; });
-      if (colTotal > 0) { total += colTotal; parts.push(`${col.name} ×${colTotal}`); }
-    });
     const btn   = document.getElementById('commitBtn');
     const sumEl = document.getElementById('pendingSummary');
-    if (total === 0) {
-      btn.disabled = true;
-      sumEl.innerHTML = 'Select sizes above to add pieces.';
+
+    if (removeMode) {
+      let total = 0;
+      const parts = [];
+      COLOURS.forEach((col, ci) => {
+        let colTotal = 0;
+        SIZES.forEach((_, si) => { colTotal += (removePend[ci][si] || 0); });
+        if (colTotal > 0) { total += colTotal; parts.push(`${col.name} ×${colTotal}`); }
+      });
+      if (total === 0) {
+        btn.disabled = true;
+        sumEl.innerHTML = 'Tap sizes to mark for removal.';
+      } else {
+        btn.disabled = false;
+        sumEl.innerHTML = `<strong class="remove">${total} pcs to remove:</strong> ${parts.join(', ')}`;
+      }
     } else {
-      btn.disabled = false;
-      sumEl.innerHTML = `<strong>${total} pcs pending:</strong> ${parts.join(', ')}`;
+      let total = 0;
+      const parts = [];
+      COLOURS.forEach((col, ci) => {
+        let colTotal = 0;
+        SIZES.forEach((_, si) => { colTotal += (pending[ci][si] || 0); });
+        if (colTotal > 0) { total += colTotal; parts.push(`${col.name} ×${colTotal}`); }
+      });
+      if (total === 0) {
+        btn.disabled = true;
+        sumEl.innerHTML = 'Select sizes above to add pieces.';
+      } else {
+        btn.disabled = false;
+        sumEl.innerHTML = `<strong>${total} pcs pending:</strong> ${parts.join(', ')}`;
+      }
     }
   }
 
   function commitSelections() {
+    if (removeMode) {
+      commitRemovals();
+    } else {
+      commitAdditions();
+    }
+  }
+
+  function commitAdditions() {
     let anyAdded = false;
     COLOURS.forEach((_, ci) => {
       SIZES.forEach((_, si) => {
@@ -835,8 +1156,30 @@
     renderAllBadges();
     updateCommitBar();
     renderReport();
+    refreshRemoveModeGrid();
     saveToCache();
     showToast('✓ Added to report');
+  }
+
+  function commitRemovals() {
+    let anyRemoved = false;
+    COLOURS.forEach((_, ci) => {
+      SIZES.forEach((_, si) => {
+        const toRemove = removePend[ci][si] || 0;
+        if (toRemove > 0) {
+          report[ci][si] = Math.max(0, (report[ci][si] || 0) - toRemove);
+          removePend[ci][si] = 0;
+          anyRemoved = true;
+        }
+      });
+    });
+    if (!anyRemoved) return;
+    renderAllBadges();
+    updateCommitBar();
+    renderReport();
+    refreshRemoveModeGrid();
+    saveToCache();
+    showToast('✓ Removed from report');
   }
 
   // ── REPORT ────────────────────────────────────────────────────────────────
@@ -857,11 +1200,13 @@
     const colData    = getColData();
     const reportBody = document.getElementById('reportBody');
     const copyBtn    = document.getElementById('copyBtn');
+    const waBtn      = document.getElementById('waBtn');
     const totalBadge = document.getElementById('totalBadge');
 
     if (colData.length === 0) {
       reportBody.innerHTML = '';
       copyBtn.disabled = true;
+      waBtn.classList.add('disabled');
       totalBadge.textContent = '0 pcs';
       return;
     }
@@ -870,6 +1215,7 @@
     colData.forEach(d => grandTotal += d.total);
     totalBadge.textContent = `${grandTotal} pcs`;
     copyBtn.disabled = false;
+    waBtn.classList.remove('disabled');
 
     reportBody.innerHTML = colData.map(d =>
       `<div class="report-colour-block">
@@ -895,20 +1241,34 @@
     try {
       await navigator.clipboard.writeText(text);
       const btn = document.getElementById('copyBtn');
-      btn.textContent = '✓ Copied!';
+      btn.innerHTML = `<svg width="13" height="13" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 8.5l3.5 3.5 6.5-7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg> Copied!`;
       btn.classList.add('copied');
-      setTimeout(() => { btn.textContent = '⎘ Copy Report'; btn.classList.remove('copied'); }, 2200);
+      setTimeout(() => {
+        btn.innerHTML = `<svg width="13" height="13" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect x="5" y="2" width="8" height="11" rx="1.5" stroke="currentColor" stroke-width="1.4"/><path d="M3 4h-.5A1.5 1.5 0 0 0 1 5.5v8A1.5 1.5 0 0 0 2.5 15H10a1.5 1.5 0 0 0 1.5-1.5V13" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg> ⎘ Copy`;
+        btn.classList.remove('copied');
+      }, 2200);
       showToast('✓ Report copied to clipboard');
     } catch {
       showToast('Copy failed — use ' + (isMac ? '⌘ ⇧ C' : 'Ctrl+Shift+C'));
     }
   }
 
+  function shareWhatsApp() {
+    const text = buildReportText();
+    if (!text) return;
+    // Opens WhatsApp send-message flow (contact picker) with pre-filled text
+    const encoded = encodeURIComponent(text);
+    window.open(`https://wa.me/?text=${encoded}`, '_blank', 'noopener,noreferrer');
+  }
+
   function clearReport() {
     initData();
+    removeMode = false;
     saveToCache();
     renderReport();
     renderAllBadges();
+    refreshRemoveModeGrid();
+    applyRemoveModeUI();
     updateCommitBar();
     showToast('Report cleared');
   }
@@ -933,7 +1293,7 @@
 
   // ── KEYBOARD NAV ─────────────────────────────────────────────────────────
   function handleKeyNav(e, ci, si) {
-    const allBtns = Array.from(document.querySelectorAll('.size-btn'));
+    const allBtns = Array.from(document.querySelectorAll('.size-btn:not(.hidden-in-remove)'));
     const me = document.querySelector(`.size-btn[data-ci="${ci}"][data-si="${si}"]`);
     const idx = allBtns.indexOf(me);
     let target = null;
@@ -945,43 +1305,37 @@
   }
 
   // ── GLOBAL SHORTCUTS ─────────────────────────────────────────────────────
-  // On Mac: metaKey (⌘). On Windows/Linux: ctrlKey.
   const modKey = e => isMac ? e.metaKey : e.ctrlKey;
 
   document.addEventListener('keydown', e => {
     const appOpen = document.getElementById('app').style.display !== 'none';
 
-    // Theme toggle — works on both screens: Mod + Shift + T
     if (modKey(e) && e.shiftKey && e.key.toUpperCase() === 'T') {
       e.preventDefault(); toggleTheme(); return;
     }
 
     if (!appOpen) return;
 
-    // Add to report: ⌘/Ctrl + Enter
     if (modKey(e) && e.key === 'Enter') {
       e.preventDefault(); commitSelections(); return;
     }
 
-    // Copy report: ⌘/Ctrl + Shift + C
     if (modKey(e) && e.shiftKey && e.key.toUpperCase() === 'C') {
       e.preventDefault(); copyReport(); return;
     }
 
-    // Reset: ⌘ + Backspace (Mac Delete key) OR Ctrl + Delete (Win)
     if (modKey(e) && (e.key === 'Backspace' || e.key === 'Delete')) {
       if (!['INPUT','TEXTAREA'].includes(document.activeElement.tagName)) {
         e.preventDefault(); confirmReset(); return;
       }
     }
 
-    // Escape: close dialog
     if (e.key === 'Escape') {
       if (document.getElementById('overlay').classList.contains('show')) closeDialog();
     }
   });
 
-  // Backdrop click
+  // Backdrop click closes dialog
   document.getElementById('overlay').addEventListener('click', e => {
     if (e.target === document.getElementById('overlay')) closeDialog();
   });
